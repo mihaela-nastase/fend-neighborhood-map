@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import ListPlaces from "./ListPlaces";
+import getFlickrImages from "./Flickr.js";
 import redMarker from "./icons/spotlight-poi2.png";
 import blueMarker from "./icons/spotlight-poi2-blue.png";
 
@@ -125,6 +126,38 @@ class App extends Component {
               infowindow.marker = null;
             });
 
+			// Use the Flickr API to retrieve pictures of the location
+            getFlickrImages(marker.keywords)
+              .then(data => {
+                let photos = data;
+
+                if (photos.length < 1) {
+                  infowindow.setContent(
+                    `<h2 class="place-title">${marker.title}</h2><div class="search-page-link">No Flickr Images Found</div>`
+                  );
+                  console.log("No Flickr Images Found");
+
+                } else {
+				  // Loop through the photos and create a single variable holding their HTML combined (up to 10 pictures). Clear commas.
+				  let pics = photos.map( photo =>
+                    `<a href="${photo.originalUrl}" class="place-link"><img src="${photo.photoUrl}" alt="${photo.photoTitle}" class="place-photo"></a>`
+                  );
+                  pics = pics.join("");
+
+                  // Set the content to be used by the infowindow. It has a fixed part and a part to be inserted, namely the pictures.
+				  let content = `<h2 class="place-title">${marker.title}</h2><a href="https://www.flickr.com/search/?text=${marker.keywords}" class="search-page-link">View Flickr Search Page</a><div id='flickr'>${pics}</div>`;
+                  infowindow.setContent(content);
+                }
+
+                infowindow.open(map, marker);
+              })
+
+              .catch(err => {
+                console.log(err);
+                infowindow.setContent(
+                  `<h2 class="place-title">${marker.title}</h2><div class="search-page-link">No response from Flickr</div>`
+                );
+              });
 
             map.setCenter(marker.getPosition());
           }

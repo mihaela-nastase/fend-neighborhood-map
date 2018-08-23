@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Place from "./Place";
 
 class ListPlaces extends Component {
   render() {
@@ -23,7 +24,16 @@ class ListPlaces extends Component {
 
             <div className="search-locations-results">
               <ol className="locations-list" role="navigation">
-
+                {this.props.filteredLocations.length > 0 &&
+                  this.props.filteredLocations.map(location => (
+                    <Place
+                      key={location.title}
+                      location={location}
+                      filteredLocations={this.props.filteredLocations}
+                      title={location.title}
+                      showMenu={this.props.showMenu}
+                    />
+                  ))}
               </ol>
             </div>
           </div>

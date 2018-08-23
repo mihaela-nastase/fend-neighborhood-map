@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import "./App.css";
+import ListPlaces from "./ListPlaces";
 import redMarker from "./icons/spotlight-poi2.png";
 import blueMarker from "./icons/spotlight-poi2-blue.png";
 
@@ -40,6 +41,8 @@ class App extends Component {
       }
     ],
     filteredLocations: [],
+    showMenu: true,
+    menuClassName: "open",
     query: "",
     infowindow: {}
   };
@@ -122,6 +125,7 @@ class App extends Component {
               infowindow.marker = null;
             });
 
+
             map.setCenter(marker.getPosition());
           }
 
@@ -149,26 +153,49 @@ class App extends Component {
     this.setState({ filteredLocations });
   };
 
+  // The input from the ListPlaces component calls this function on change, triggering the filterLocations method with a parameter.
+  onSearchChange = query => {
+    this.setState(() => ({ query }), () => this.filterLocations(query));
+  };
 
+  // Open and close the menu on click by changing its className. This is also used to add padding to the map so it doesn't overlap.
+  toggleMenu = () => {
+    // Solution: https://stackoverflow.com/a/48394541
+    this.setState(prevState => ({
+      showMenu: !prevState.showMenu
+    }));
+    this.setState({ menuClassName: this.state.showMenu ? "close" : "open" });
+  };
 
   render() {
     return this.state.loaded ? (
       <div className="App">
-        <div id="sidebar">
+        <div id="sidebar" className={this.state.menuClassName}>
           <a
             id="menu"
             className="menu-button"
             role="button"
+            onClick={this.toggleMenu}
+            onKeyPress={this.toggleMenu}
             tabIndex="0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path d="M2 6h20v3H2zm0 5h20v3H2zm0 5h20v3H2z" />
             </svg>
           </a>
+          <ListPlaces
+            component={ListPlaces}
+            locations={this.state.locations}
+            showMenu={this.state.showMenu}
+            role="complementary"
+            onSearchChange={this.onSearchChange}
+            filteredLocations={this.state.filteredLocations}
+          />
         </div>
         <main
           id="maincontent"
           role="main"
+          className={this.state.showMenu ? "" : "padding"}
         >
           <section id="map-container">
             <div id="map" role="application" aria-label="Map with locations" />
